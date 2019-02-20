@@ -1,0 +1,15 @@
+{
+    "name": "TimeLock",
+    "license": "OSL-3.0",
+    "type": "magento-module",
+    "description": "",
+    "require": {
+        "magento-hackathon/magento-composer-installer": "*"
+    },
+    "authors":[
+        {
+            "name":"Andrey",
+            "email":"support@kt-team.de"
+        }
+    ]
+}
