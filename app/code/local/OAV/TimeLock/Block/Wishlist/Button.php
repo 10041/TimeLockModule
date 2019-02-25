@@ -10,13 +10,11 @@ class OAV_TimeLock_Block_Wishlist_Button extends Mage_Wishlist_Block_Customer_Wi
     {
         $wishlist = $this->getWishlist()->getItemCollection();
 
-        /** @var OAV_TimeLock_Helper_TimeChecker $helper */
-        $helper = Mage::helper("TimeLock/TimeChecker");
+        /** @var OAV_TimeLock_Helper_TimeChecker $timeCheckerHelper */
+        $timeCheckerHelper = Mage::helper("TimeLock/TimeChecker");
 
         foreach ($wishlist as $item) {
-
-            if($helper->isProductLock($item->getProduct())) {
-
+            if($timeCheckerHelper->isProductLock($item->getProduct())) {
                 return false;
             }
         }

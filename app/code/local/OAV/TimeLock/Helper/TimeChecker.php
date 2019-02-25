@@ -25,19 +25,21 @@ class OAV_TimeLock_Helper_TimeChecker extends Mage_Core_Helper_Abstract
 
     private function dateCommaToColon()
     {
-        $this->blockTime = str_replace(",", ":", $this->blockTime);
-        $this->unlockTime = str_replace(",", ":", $this->unlockTime);
+        $this->blockTime = str_replace(',',':', $this->blockTime);
+        $this->unlockTime = str_replace(',',':', $this->unlockTime);
     }
+
 
     /**
      * @param $product
+     *
      * @return bool
-     * @throws Mage_Core_Exception
+     *
+     * @throws Exception
      */
     public function isProductLock($product)
     {
         if(!$this->checkTime()) {
-
             return $this->checkProductInCategoryIds($product);
         }
 
@@ -46,26 +48,27 @@ class OAV_TimeLock_Helper_TimeChecker extends Mage_Core_Helper_Abstract
 
     /**
      * @return bool
+     *
+     * @throws Exception
      */
     public function checkTime()
     {
-        /** @var Mage_Core_Model_Date $model */
-        $model = Mage::getModel('core/date');
-        $currentTime = strtotime(date("Y-m-d G:i:s", $model->timestamp(time())));
-        if ($currentTime >= $this->blockTime && $currentTime <= $this->unlockTime) {
-
+        $currentTime = $this->getCurrentTimeFromDateModel();
+        $currentTimeTimestamp = strtotime($currentTime->format("Y-m-d G:i:s"));
+        if ($currentTimeTimestamp >= $this->blockTime && $currentTimeTimestamp <= $this->unlockTime) {
             return false;
         }
 
         return true;
     }
 
+    /**
+     * @throws Exception
+     */
     private function adjustTime()
     {
-        /** @var \Mage_Core_Model_Date $model */
-        $model = Mage::getModel('core/date');
-        $currentTime = date("G:i:s", $model->timestamp(time()));
-        if ($this->blockTime >= $this->unlockTime && $currentTime >= $this->unlockTime) {
+        $currentTime = $this->getCurrentTimeFromDateModel();
+        if ($this->blockTime >= $this->unlockTime && $currentTime->format("G:i:s") >= $this->unlockTime) {
             $this->unlockTime = strtotime(date("Y-m-d")." ".$this->unlockTime."+1 day");
         } else {
             $this->unlockTime = strtotime(date("Y-m-d")." ".$this->unlockTime);
@@ -74,13 +77,27 @@ class OAV_TimeLock_Helper_TimeChecker extends Mage_Core_Helper_Abstract
     }
 
     /**
+     * @return DateTime
+     *
+     * @throws Exception
+     */
+    private function getCurrentTimeFromDateModel()
+    {
+        /** @var \Mage_Core_Model_Date $coreDateModel */
+        $coreDateModel = Mage::getModel('core/date');
+        $currentTime = new DateTime();
+        $currentTime->setTimestamp($coreDateModel->timestamp(time()));
+        return $currentTime;
+    }
+
+    /**
      * @param $product Mage_Catalog_Model_Product
+     *
      * @return bool
      */
     public function checkProductInCategoryIds($product)
     {
         if (in_array($this->blockCategoryId, $product->getCategoryIds())) {
-
             return true;
         }
 
@@ -89,12 +106,13 @@ class OAV_TimeLock_Helper_TimeChecker extends Mage_Core_Helper_Abstract
 
     /**
      * @param $product Mage_Catalog_Model_Product
+     *
      * @throws Mage_Core_Exception
      */
     public function checkProductInCategoryIdsAndGenException($product)
     {
         if (in_array($this->blockCategoryId, $product->getCategoryIds())) {
-            Mage::throwException('Buying alcohol after '.date("G:i", $this->blockTime).' is forbidden.');
+            Mage::throwException(sprintf('Buying alcohol after %s is forbidden', date("G:i", $this->blockTime)));
         }
     }
 
@@ -103,11 +121,6 @@ class OAV_TimeLock_Helper_TimeChecker extends Mage_Core_Helper_Abstract
      */
     public function getTimeLockInterval()
     {
-        $str = date("G:i",$this->blockTime)." - ".date("G:i", $this->unlockTime);
-
-        return $str;
+        return date("G:i",$this->blockTime)." - ".date("G:i", $this->unlockTime);
     }
-
-
-
 }
